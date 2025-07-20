@@ -186,6 +186,7 @@ footer {
     color: var(--color-text-secondary);
     font-size: 0.875rem;
     padding-bottom: 2rem;
+    max-width: 32rem;
 
     a {
         color: var(--color-text);
