@@ -135,7 +135,9 @@ in Chrome 138 or above.
 ✧✧✧✧✧
 </pre>
 
-    {@render footer()}
+    <footer>
+        {@render footer()}
+    </footer>
 {:else}
     <section>
         {#if !isSessionCreated}

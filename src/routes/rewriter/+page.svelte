@@ -1,7 +1,7 @@
 <script lang="ts">
     import Notify from "$lib/components/Notify.svelte";
     import Select from "$lib/components/Select.svelte";
-    import { onMount, type Snippet  } from "svelte";
+    import { onMount, type Snippet } from "svelte";
 
     type Props = {
         footer: Snippet;
@@ -104,7 +104,9 @@ in Chrome 138 or above.
 ✧✧✧✧✧
 </pre>
 
-    {@render footer()}
+    <footer>
+        {@render footer()}
+    </footer>
 {:else}
     <div class="cnt">
         <div class="left-cnt">

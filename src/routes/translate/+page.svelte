@@ -204,7 +204,9 @@ this page in Chrome 138 or above.
 ✧✧✧✧✧
 </pre>
 
-    {@render footer()}
+    <footer>
+        {@render footer()}
+    </footer>
 {:else}
     <div class="cnt">
         <div class="left-cnt">
