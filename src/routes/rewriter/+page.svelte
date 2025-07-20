@@ -58,33 +58,46 @@
         }
 
         if (availability === "unavailable") {
-            console.error("Writer is not available");
+            notifyMessage = "Rewriter is not available in your browser";
+            showNotification = true;
             return;
         }
 
-        if (availability === "available") {
-            isLoading = true;
-            rewriter = await self.Rewriter.create(options);
-            const stream = rewriter.rewriteStreaming(prompt, { context });
-            for await (const chunk of stream) {
-                console.log({ chunk });
-                result += chunk;
-            }
-            isLoading = false;
-        } else {
-            isLoading = true;
-            rewriter = await self.Rewriter.create({
-                ...options,
-                monitor,
-            });
+        try {
+            if (availability === "available") {
+                isLoading = true;
+                rewriter = await self.Rewriter.create(options);
 
-            showNotification = false;
+                const stream = rewriter.rewriteStreaming(prompt, { context });
+                for await (const chunk of stream) {
+                    result += chunk;
+                }
 
-            const stream = rewriter.rewriteStreaming(prompt, { context });
-            for await (const chunk of stream) {
-                result += chunk;
+                isLoading = false;
+            } else {
+                isLoading = true;
+                rewriter = await self.Rewriter.create({
+                    ...options,
+                    monitor,
+                });
+
+                showNotification = false;
+
+                const stream = rewriter.rewriteStreaming(prompt, { context });
+                for await (const chunk of stream) {
+                    result += chunk;
+                }
+
+                isLoading = false;
             }
+        } catch (error) {
+            console.log(error);
+            notifyMessage = error as string;
+            showNotification = true;
             isLoading = false;
+            setTimeout(() => {
+                showNotification = false;
+            }, 2000);
         }
     }
 

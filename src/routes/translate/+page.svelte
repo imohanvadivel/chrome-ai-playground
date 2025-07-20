@@ -40,7 +40,8 @@
 
         if (availability === "unavailable") {
             // Model is not available
-            console.error("Language detector not supported");
+            notifyMessage = "Language detector is not available in your browser";
+            showNotification = true;
             return;
         }
 
@@ -98,7 +99,8 @@
         }
 
         if (translatorCapabilities === "unavailable") {
-            console.error("Language pair not supported");
+            notifyMessage = "Translator is not available in your browser";
+            showNotification = true;
             return;
         }
 
@@ -109,9 +111,18 @@
                 targetLanguage,
             });
 
-            const stream = await translator.translateStreaming(textToTranslate);
-            for await (const chunk of stream) {
-                translatedText += chunk;
+            try {
+                const stream = await translator.translateStreaming(textToTranslate);
+                for await (const chunk of stream) {
+                    translatedText += chunk;
+                }
+            } catch (error) {
+                console.log(error);
+                notifyMessage = error as string;
+                showNotification = true;
+                setTimeout(() => {
+                    isLoading = false;
+                }, 2000);
             }
             isLoading = false;
             return translatedText;
@@ -126,9 +137,18 @@
             showNotification = false;
 
             await translator.ready;
-            const stream = await translator.translateStreaming(textToTranslate);
-            for await (const chunk of stream) {
-                translatedText += chunk;
+            try {
+                const stream = await translator.translateStreaming(textToTranslate);
+                for await (const chunk of stream) {
+                    translatedText += chunk;
+                }
+            } catch (error) {
+                console.log(error);
+                notifyMessage = error as string;
+                showNotification = true;
+                setTimeout(() => {
+                    isLoading = false;
+                }, 2000);
             }
             isLoading = false;
             return translatedText;

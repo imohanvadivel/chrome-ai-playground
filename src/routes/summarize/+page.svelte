@@ -60,43 +60,53 @@
 
         if (availability === "unavailable") {
             console.error("Summarizer is not available");
+            notifyMessage = "Summarizer is not available in your browser";
+            showNotification = true;
             return;
         }
+        try {
+            if (availability === "available") {
+                // Model is available for use
+                console.log("Summarizer is available");
 
-        if (availability === "available") {
-            // Model is available for use
-            console.log("Summarizer is available");
+                isLoading = true;
 
-            isLoading = true;
+                summarizer = await self.Summarizer.create(options);
+                const stream = summarizer.summarizeStreaming(text, { context });
 
-            summarizer = await self.Summarizer.create(options);
-            const stream = summarizer.summarizeStreaming(text, { context });
+                for await (const chunk of stream) {
+                    result += chunk;
+                }
 
-            for await (const chunk of stream) {
-                result += chunk;
+                isLoading = false;
+            } else {
+                // Model is available for download
+                console.log("Summarizer is available for download");
+
+                isLoading = true;
+
+                summarizer = await self.Summarizer.create({
+                    ...options,
+                    monitor,
+                });
+
+                showNotification = false;
+
+                const stream = summarizer.summarizeStreaming(text, { context });
+
+                for await (const chunk of stream) {
+                    result += chunk;
+                }
+
+                isLoading = false;
             }
-
+        } catch (error) {
+            notifyMessage = error as string;
+            showNotification = true;
             isLoading = false;
-        } else {
-            // Model is available for download
-            console.log("Summarizer is available for download");
-
-            isLoading = true;
-
-            summarizer = await self.Summarizer.create({
-                ...options,
-                monitor,
-            });
-
-            showNotification = false;
-
-            const stream = summarizer.summarizeStreaming(text, { context });
-
-            for await (const chunk of stream) {
-                result += chunk;
-            }
-
-            isLoading = false;
+            setTimeout(() => {
+                showNotification = false;
+            }, 2000);
         }
     }
 

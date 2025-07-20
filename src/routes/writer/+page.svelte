@@ -59,34 +59,51 @@
 
         if (availability === "unavailable") {
             console.error("Writer is not available");
+
+            notifyMessage = "Writer is not available in your browser";
+            showNotification = true;
             return;
         }
 
-        if (availability === "available") {
-            writer = await self.Writer.create(options);
-            let inputQuota = writer.inputQuota;
-            isLoading = true;
-            let inputUsage = await writer.measureInputUsage(prompt);
-            console.log({ inputQuota, inputUsage });
-            const stream = writer.writeStreaming(prompt, { context });
-            for await (const chunk of stream) {
-                result += chunk;
-            }
-            isLoading = false;
-        } else {
-            isLoading = true;
-            writer = await self.Writer.create({
-                ...options,
-                monitor,
-            });
+        try {
+            if (availability === "available") {
+                writer = await self.Writer.create(options);
+                isLoading = true;
 
-            showNotification = false;
+                let inputQuota = writer.inputQuota;
+                let inputUsage = await writer.measureInputUsage(prompt);
+                console.log({ inputQuota, inputUsage });
 
-            const stream = writer.writeStreaming(prompt, { context });
-            for await (const chunk of stream) {
-                result += chunk;
+                const stream = writer.writeStreaming(prompt, { context });
+                for await (const chunk of stream) {
+                    result += chunk;
+                }
+
+                isLoading = false;
+            } else {
+                isLoading = true;
+                writer = await self.Writer.create({
+                    ...options,
+                    monitor,
+                });
+
+                showNotification = false;
+
+                const stream = writer.writeStreaming(prompt, { context });
+                for await (const chunk of stream) {
+                    result += chunk;
+                }
+
+                isLoading = false;
             }
+        } catch (error) {
+            console.log(error);
+            notifyMessage = error as string;
+            showNotification = true;
             isLoading = false;
+            setTimeout(() => {
+                showNotification = false;
+            }, 2000);
         }
     }
 

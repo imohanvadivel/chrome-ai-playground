@@ -32,7 +32,8 @@
         const availability = await self.LanguageModel.availability();
 
         if (availability === "unavailable") {
-            console.error("LanguageModel is not available");
+            notifyMessage = "LanguageModel is not available in your browser";
+            showNotification = true;
             return;
         }
 
@@ -50,16 +51,27 @@
             });
         }
 
-        if (availability === "available") {
-            session = await self.LanguageModel.create({ initialPrompts });
-            isSessionCreated = true;
-        } else {
-            session = await self.LanguageModel.create({
-                initialPrompts,
-                monitor,
-            });
-            showNotification = false;
-            isSessionCreated = true;
+        try {
+            isLoading = true;
+            if (availability === "available") {
+                session = await self.LanguageModel.create({ initialPrompts });
+                isSessionCreated = true;
+            } else {
+                session = await self.LanguageModel.create({
+                    initialPrompts,
+                    monitor,
+                });
+                showNotification = false;
+                isSessionCreated = true;
+            }
+        } catch (error) {
+            console.log(error);
+            notifyMessage = error as string;
+            showNotification = true;
+            isLoading = false;
+            setTimeout(() => {
+                showNotification = false;
+            }, 2000);
         }
     }
 
@@ -83,21 +95,27 @@
             },
         ];
 
-        isLoading = true;
+        try {
+            const stream = session.promptStreaming(currentPrompt);
+            currentPrompt = "";
 
-        const stream = session.promptStreaming(currentPrompt);
-        currentPrompt = "";
+            for await (const chunk of stream) {
+                prompts[prompts.length - 1].content += chunk;
 
-        for await (const chunk of stream) {
-            prompts[prompts.length - 1].content += chunk;
+                chatWindow?.scrollTo({
+                    top: chatWindow.scrollHeight,
+                    behavior: "smooth",
+                });
+            }
+        } catch (error) {
+            console.log(error);
+            notifyMessage = error as string;
+            showNotification = true;
 
-            chatWindow?.scrollTo({
-                top: chatWindow.scrollHeight,
-                behavior: "smooth",
-            });
+            setTimeout(() => {
+                showNotification = false;
+            }, 2000);
         }
-
-        isLoading = false;
     }
 
     onMount(() => {
@@ -146,7 +164,7 @@ in Chrome 138 or above.
                 <textarea spellcheck="false" name="" id="" bind:value={systemPrompt} rows={4}></textarea>
             </div>
 
-            <button onclick={createSession}>Create a Session</button>
+            <button onclick={createSession} class:isloading={isLoading}>Create a Session</button>
         {/if}
 
         {#if isSessionCreated}
@@ -169,7 +187,7 @@ in Chrome 138 or above.
             </div>
 
             <div class="footer-cnt">
-                <button onclick={promptStreaming} class:isloading={isLoading}>Send</button>
+                <button onclick={promptStreaming}>Send</button>
                 <button class="secondary" onclick={terminateSession}>Create New Session</button>
             </div>
             <footer>
