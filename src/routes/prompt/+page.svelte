@@ -76,8 +76,12 @@
     }
 
     function terminateSession() {
-        session.terminate();
+        session.destroy();
         isSessionCreated = false;
+        prompts = [];
+        currentPrompt = "";
+        systemPrompt = "";
+        isLoading = false;
     }
 
     async function promptStreaming() {

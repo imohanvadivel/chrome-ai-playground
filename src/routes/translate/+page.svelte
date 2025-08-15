@@ -106,6 +106,7 @@
 
         if (translatorCapabilities === "available") {
             isLoading = true;
+            translatedText = "";
             const translator = await self.Translator.create({
                 sourceLanguage,
                 targetLanguage,
