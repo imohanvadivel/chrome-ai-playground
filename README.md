@@ -5,3 +5,6 @@ browser. While some APIs are live, while others are in origin trials, so support
 
 
 https://mohanvadivel.com/projects/chrome-ai/
+
+
+![Chrome AI Playground](/static/banner.png)
